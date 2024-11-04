@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>APM Members</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <img src="/static/images/inditronics-logo.png" alt="Inditronics Logo" class="logo">
+                <p>Inditronics</p>
+            </div>
+            <div id="current-time"></div>
+        </header>
+
+<main>
+    <div id="members-container"></div>
+    <div class="overlay">
+        <div class="tv-status">
+            <span class="material-icons small">warning</span>
+            TV Cable Disconnected
+        </div>
+        <div class="clock-display">
+            <div class="time">12:00</div>
+            <div class="date">Monday, January 1</div>
+            <div class="meridiem">AM</div>
+        </div>
+    </div>
+</main>
+
+        <footer>
+            <button id="info-btn" class="footer-btn">
+                <span class="material-icons">info</span>
+            </button>
+            <button id="settings-btn" class="footer-btn">
+                <span class="material-icons">settings</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Member Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Add Member</h2>
+            <form id="member-form">
+                <input type="hidden" id="member-id">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
+                <label for="age">Age:</label>
+                <input type="number" id="age" required>
+                <label for="gender">Gender:</label>
+                <select id="gender" required>
+                    <option value="m">Male</option>
+                    <option value="f">Female</option>
+                </select>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>System Status</h2>
+            <div id="system-status"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+<!-- Network Settings Modal -->
+<div id="settings-modal" class="modal">
+    <div class="modal-content setting-content">
+        <span class="close">&times;</span>
+        <h2>Network Settings</h2>
+        <form id="wifi-form">
+            <div class="input-group">
+                <label for="wifi-ssid">Wi-Fi SSID:</label>
+                <input type="text" id="wifi-ssid" required>
+            </div>
+            <div class="input-group">
+                <label for="wifi-password">Password:</label>
+                <input type="password" id="wifi-password" required>
+            </div>
+            <button type="submit" class="primary-btn">Connect</button>
+        </form>
+        <button id="disconnect-wifi" class="secondary-btn">Disconnect</button>
+        <div class="network-list-container">
+            <h3>Available Networks</h3>
+            <ul id="wifi-network-list"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Other modals (Member, Info, Delete) should follow a similar structure -->
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">J
+            <h2>Delete Member</h2>
+            <p>Are you sure you want to delete <span id="delete-member-name"></span>?</p>
+            <div class="modal-actions">
+                <button id="confirm-delete" class="danger-btn">Delete</button>
+                <button id="cancel-delete" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Virtual Keyboard -->
+    <div id="virtual-keyboard" class="keyboard-container">
+        <div class="keyboard">
+            <div class="keyboard-row" id="number-row"></div>
+            <div class="keyboard-row" id="top-row"></div>
+            <div class="keyboard-row" id="middle-row"></div>
+            <div class="keyboard-row" id="bottom-row"></div>
+            <div class="keyboard-row" id="space-row">
+                <button class="keyboard-key space-key">Space</button>
+                <button class="keyboard-key enter-key">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+     
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script>
+        // Prevent zooming with Ctrl + '+' or Ctrl + '-' or Ctrl + '='
+        document.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '-' || event.key === '=')) {
+                event.preventDefault();
+            }
+        });
+
+        // Prevent zooming with Ctrl + Scroll Up/Down
+        document.addEventListener('wheel', function(event) {
+            if (event.ctrlKey) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
