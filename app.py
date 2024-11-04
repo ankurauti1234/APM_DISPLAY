@@ -10,6 +10,8 @@ import threading
 import subprocess
 import re
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QShortcut
 
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -266,9 +268,6 @@ def close_application():
     QtCore.QCoreApplication.quit()
     return 'Closing application'
 
-# Function to run the Flask app
-def run_flask():
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
 
 # Main PyQt application
 class MyApp(QtWidgets.QMainWindow):
@@ -279,11 +278,22 @@ class MyApp(QtWidgets.QMainWindow):
         self.showFullScreen()  # Set the window to full screen
         
         # Disable zooming
-        self.browser.settings().setAttribute(QWebEngineSettings.ZoomFactor, 1.0)
+        self.browser.setZoomFactor(1.0)
         self.browser.settings().setAttribute(QWebEngineSettings.ShowScrollBars, False)
         self.browser.settings().setAttribute(QWebEngineSettings.ScrollAnimatorEnabled, False)
         
+        # Disable zoom shortcuts
+        self.disable_zoom_shortcuts()
+        
         self.browser.setUrl(QUrl("http://127.0.0.1:5000"))
+
+    def disable_zoom_shortcuts(self):
+        # Create dummy shortcuts to override default zoom behavior
+        QShortcut(QKeySequence.ZoomIn, self, lambda: None)
+        QShortcut(QKeySequence.ZoomOut, self, lambda: None)
+        QShortcut(QKeySequence("Ctrl+="), self, lambda: None)
+        QShortcut(QKeySequence("Ctrl+-"), self, lambda: None)
+        QShortcut(QKeySequence("Ctrl+0"), self, lambda: None)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_F4 and event.modifiers() == QtCore.Qt.AltModifier:
@@ -291,13 +301,17 @@ class MyApp(QtWidgets.QMainWindow):
         else:
             super().keyPressEvent(event)
 
+# Function to run the Flask app
+def run_flask():
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+
 if __name__ == '__main__':
     # Start the Flask app in a separate thread
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
     
     # Start the PyQt application
-    app = QtWidgets.QApplication(sys.argv)
+    qt_app = QtWidgets.QApplication(sys.argv)
     window = MyApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(qt_app.exec_())
