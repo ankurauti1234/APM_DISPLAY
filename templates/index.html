@@ -151,6 +151,12 @@
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
+        
+         window.addEventListener('beforeunload', function (e) {
+            fetch('/close')
+                .then(response => console.log('Application closing'))
+                .catch(error => console.error('Error closing application:', error));
+        });
     </script>
 </body>
 </html>
