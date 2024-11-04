@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request, jsonify
 from mqtt_publisher import publish_mqtt_message
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 import sys
 import threading
@@ -282,8 +282,21 @@ class MyApp(QtWidgets.QMainWindow):
         self.browser.settings().setAttribute(QWebEngineSettings.ShowScrollBars, False)
         self.browser.settings().setAttribute(QWebEngineSettings.ScrollAnimatorEnabled, False)
         
-        # Disable zoom shortcuts
+        # Disable touch and keyboard zoom shortcuts
         self.disable_zoom_shortcuts()
+        
+        # Disable touch events
+        self.browser.setAttribute(Qt.WA_AcceptTouchEvents, False)
+        
+        # Inject JavaScript to disable pinch zooming
+        self.browser.page().runJavaScript("""
+            document.addEventListener('touchmove', function(event) {
+                if (event.scale !== 1) { event.preventDefault(); }
+            }, { passive: false });
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+        """)
         
         self.browser.setUrl(QUrl("http://127.0.0.1:5000"))
 
