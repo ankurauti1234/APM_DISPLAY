@@ -23,7 +23,6 @@ def get_member_states():
     conn.close()
     return [(m[0], bool(m[1]), m[2], m[3]) for m in members]
 
-# Database initialization
 def init_db():
     conn = sqlite3.connect('system_status.db')
     c = conn.cursor()
@@ -63,22 +62,18 @@ def get_system_status():
     conn = sqlite3.connect('system_status.db')
     c = conn.cursor()
     
-    # Get current system status
     c.execute('SELECT * FROM system_status WHERE id = 1')
     row = c.fetchone()
     
     if row:
         is_tv_cable_plugged_in = bool(row[5])
         
-        # If TV cable is not plugged in, deactivate all members
         if not is_tv_cable_plugged_in:
             c.execute('UPDATE members SET is_active = 0')
             conn.commit()
             
-            # Get new member states after update
             current_member_states = get_member_states()
             
-            # Only publish if states have changed
             if current_member_states != last_known_member_states:
                 publish_mqtt_message()
                 last_known_member_states = current_member_states
@@ -110,10 +105,8 @@ def members():
         conn.commit()
         member_id = c.lastrowid
         
-        # Get new member states after update
         current_member_states = get_member_states()
         
-        # Only publish if states have changed
         if current_member_states != last_known_member_states:
             publish_mqtt_message()
             last_known_member_states = current_member_states
@@ -121,7 +114,6 @@ def members():
         conn.close()
         return jsonify({'id': member_id, 'message': 'Member added successfully'}), 201
     
-    # GET request handling remains the same
     c.execute('SELECT * FROM members')
     members = [{'id': row[0], 'name': row[1], 'age': row[2], 'gender': row[3], 'is_active': bool(row[4])}
                for row in c.fetchall()]
@@ -163,22 +155,18 @@ def toggle_member_active(member_id):
     conn = sqlite3.connect('system_status.db')
     c = conn.cursor()
     
-    # Get current state
     c.execute('SELECT is_active FROM members WHERE id=?', (member_id,))
     current_state = c.fetchone()
     if current_state is None:
         conn.close()
         return jsonify({'error': 'Member not found'}), 404
     
-    # Update state
     new_state = not bool(current_state[0])
     c.execute('UPDATE members SET is_active = ? WHERE id=?', (new_state, member_id))
     conn.commit()
     
-    # Get new member states after update
     current_member_states = get_member_states()
     
-    # Only publish if states have changed
     if current_member_states != last_known_member_states:
         publish_mqtt_message()
         last_known_member_states = current_member_states
@@ -193,93 +181,87 @@ def connect_wifi():
     password = data.get('password')
 
     try:
-        # Create a Wi-Fi profile XML
-        profile = f"""<?xml version="1.0"?>
-        <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
-            <name>{ssid}</name>
-            <SSIDConfig>
-                <SSID>
-                    <name>{ssid}</name>
-                </SSID>
-            </SSIDConfig>
-            <connectionType>ESS</connectionType>
-            <connectionMode>auto</connectionMode>
-            <MSM>
-                <security>
-                    <authEncryption>
-                        <authentication>WPA2PSK</authentication>
-                        <encryption>AES</encryption>
-                        <useOneX>false</useOneX>
-                    </authEncryption>
-                    <sharedKey>
-                        <keyType>passPhrase</keyType>
-                        <protected>false</protected>
-                        <keyMaterial>{password}</keyMaterial>
-                    </sharedKey>
-                </security>
-            </MSM>
-        </WLANProfile>"""
-
-        # Save the profile to a file
-        with open(f"{ssid}.xml", "w") as f:
-            f.write(profile)
-
-        # Add the Wi-Fi profile
-        subprocess.run(f'netsh wlan add profile filename="{ssid}.xml"', check=True, shell=True)
-
-        # Connect to the Wi-Fi network
-        subprocess.run(f'netsh wlan connect name="{ssid}"', check=True, shell=True)
-
+        # Check if the network is already known
+        check_network = subprocess.run(['nmcli', '-t', '-f', 'NAME', 'connection', 'show'], 
+                                    capture_output=True, text=True)
+        known_networks = check_network.stdout.strip().split('\n')
+        
+        # If network exists, delete it to update with new password
+        if ssid in known_networks:
+            subprocess.run(['sudo', 'nmcli', 'connection', 'delete', ssid], check=True)
+        
+        # Add and connect to the network
+        subprocess.run([
+            'sudo', 'nmcli', 'device', 'wifi', 'connect', ssid,
+            'password', password
+        ], check=True)
+        
         return jsonify({"message": "Connected successfully!"}), 200
     except subprocess.CalledProcessError as e:
-        return jsonify({"message": "Connection failed!", "error": str(e)}), 500
+        return jsonify({
+            "message": "Connection failed!", 
+            "error": str(e)
+        }), 500
 
 @app.route('/api/wifi/disconnect', methods=['POST'])
 def disconnect_wifi():
     try:
-        # Get the current connection info
-        output = subprocess.check_output('netsh wlan show interfaces', universal_newlines=True)
-        ssid = re.search(r"SSID\s+:\s(.+)", output)
-        if ssid:
-            ssid = ssid.group(1).strip()
-            # Disconnect from the current network
-            subprocess.run(f'netsh wlan disconnect interface="Wi-Fi"', check=True, shell=True)
-            return jsonify({"message": f"Disconnected from {ssid} successfully!"}), 200
+        # Get current connection info
+        connection_info = subprocess.check_output(['nmcli', '-t', '-f', 'NAME,TYPE', 'connection', 'show', '--active'],
+                                               universal_newlines=True)
+        
+        # Find WiFi connection
+        wifi_connection = None
+        for line in connection_info.split('\n'):
+            if line and ':wifi' in line:
+                wifi_connection = line.split(':')[0]
+                break
+        
+        if wifi_connection:
+            # Disconnect from the network
+            subprocess.run(['sudo', 'nmcli', 'device', 'disconnect', 'wlan0'], check=True)
+            return jsonify({"message": f"Disconnected from {wifi_connection} successfully!"}), 200
         else:
             return jsonify({"message": "No active Wi-Fi connection found."}), 200
+            
     except subprocess.CalledProcessError as e:
-        return jsonify({"message": "Disconnection failed!", "error": str(e)}), 500
+        return jsonify({
+            "message": "Disconnection failed!", 
+            "error": str(e)
+        }), 500
 
 @app.route('/api/wifi/networks', methods=['GET'])
 def list_wifi_networks():
     try:
-        # Use subprocess to run the netsh command to list available networks
-        output = subprocess.check_output(['netsh', 'wlan', 'show', 'network', 'mode=Bssid'], universal_newlines=True)
+        # Scan for networks
+        subprocess.run(['sudo', 'nmcli', 'device', 'wifi', 'rescan'], check=True)
         
-        # Parse the output to extract SSIDs and signal strength
+        # Get network list
+        output = subprocess.check_output([
+            'nmcli', '-t', '-f', 'SSID,SIGNAL,SECURITY', 'device', 'wifi', 'list'
+        ], universal_newlines=True)
+        
         networks = []
-        current_network = {}
-        for line in output.splitlines():
-            if "SSID" in line and "BSSID" not in line:
-                if current_network:
-                    networks.append(current_network)
-                    current_network = {}
-                ssid = line.split(":")[1].strip()
-                current_network["ssid"] = ssid
-            elif "Signal" in line:
-                signal = line.split(":")[1].strip()
-                current_network["signal_strength"] = signal
-
-        if current_network:
-            networks.append(current_network)
-
+        for line in output.strip().split('\n'):
+            if line:
+                ssid, signal, security = line.split(':')
+                if ssid:  # Only add networks with non-empty SSIDs
+                    networks.append({
+                        "ssid": ssid,
+                        "signal_strength": f"{signal}%",
+                        "security": security if security else "None"
+                    })
+        
         return jsonify(networks), 200
     except subprocess.CalledProcessError as e:
-        return jsonify({"message": "Failed to scan networks!", "error": str(e)}), 500
+        return jsonify({
+            "message": "Failed to scan networks!", 
+            "error": str(e)
+        }), 500
 
 # Function to run the Flask app
 def run_flask():
-    app.run(debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
 
 # Main PyQt application
 class MyApp(QtWidgets.QMainWindow):
@@ -288,7 +270,7 @@ class MyApp(QtWidgets.QMainWindow):
         self.browser = QWebEngineView()
         self.setCentralWidget(self.browser)
         self.showFullScreen()  # Set the window to full screen
-        self.browser.setUrl(QUrl("http://127.0.0.1:5000"))  # URL to your Flask app
+        self.browser.setUrl(QUrl("http://127.0.0.1:5000"))
 
 if __name__ == '__main__':
     # Start the Flask app in a separate thread
