@@ -888,3 +888,58 @@ main {
   animation: move-arrows 0.5s linear infinite;
   -webkit-animation: move-arrows 0.5s linear infinite;
 }
+
+.network-settings-layout {
+    display: flex;
+    gap: 2rem;
+}
+
+.network-form-container {
+    flex: 1;
+}
+
+.network-list-container {
+    flex: 1;
+    border-left: 1px solid var(--color-border);
+    padding-left: 2rem;
+}
+
+#wifi-form {
+    margin-bottom: 1rem;
+}
+
+#wifi-network-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
+
+#wifi-network-list > li {
+    list-style: none;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+#wifi-network-list > li:last-child {
+    border-bottom: none;
+}
+
+#disconnect-wifi {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .network-settings-layout {
+        flex-direction: column;
+    }
+
+    .network-list-container {
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+        padding-left: 0;
+        padding-top: 2rem;
+        margin-top: 2rem;
+    }
+}
