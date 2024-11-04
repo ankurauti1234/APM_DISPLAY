@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 from mqtt_publisher import publish_mqtt_message
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 import sys
 import threading
 import subprocess
@@ -277,6 +277,12 @@ class MyApp(QtWidgets.QMainWindow):
         self.browser = QWebEngineView()
         self.setCentralWidget(self.browser)
         self.showFullScreen()  # Set the window to full screen
+        
+        # Disable zooming
+        self.browser.settings().setAttribute(QWebEngineSettings.ZoomFactor, 1.0)
+        self.browser.settings().setAttribute(QWebEngineSettings.ShowScrollBars, False)
+        self.browser.settings().setAttribute(QWebEngineSettings.ScrollAnimatorEnabled, False)
+        
         self.browser.setUrl(QUrl("http://127.0.0.1:5000"))
 
     def keyPressEvent(self, event):
