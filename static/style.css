@@ -107,7 +107,7 @@
 }
 
 html, body {
-  width: 800px;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
   position: fixed;
@@ -123,8 +123,8 @@ body {
 }
 
 .container {
-  width: 800px;
-  height: 480px;
+  /* width: 1024px;
+  height: 600px; */
   background-color: var(--color-surface);
   box-shadow: 0 0.25rem 1.25rem var(--color-shadow);
   display: flex;
@@ -140,7 +140,7 @@ header {
   padding: 0 1.5rem;
   background-color: var(--color-surface);
   border-bottom: 0.0625rem solid var(--color-border);
-  height: 3.5rem;
+  height: 10vh;
 }
 
 .logo-container {
@@ -282,7 +282,7 @@ main {
   /* padding: 0.25rem; */
   box-shadow: 0 0.25rem 0.5rem var(--color-shadow);
   position: relative;
-  height: 11.25rem;
+  height: 38vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -399,7 +399,7 @@ footer {
   padding: 0.25rem 1.5rem;
   background-color: var(--color-surface);
   border-top: 0.0625rem solid var(--color-border);
-  height: 2.25rem;
+  height: 8vh;
 }
 
 .footer-btn {
@@ -901,7 +901,7 @@ main {
 .network-list-container {
     flex: 1;
     border-left: 1px solid var(--color-border);
-    padding-left: 2rem;
+    padding-left: 1rem;
 }
 
 #wifi-form {
@@ -909,17 +909,18 @@ main {
 }
 
 #wifi-network-list {
-    max-height: 200px;
+    height: 220px;
     overflow-y: auto;
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.25rem;
 }
 
 #wifi-network-list > li {
     list-style: none;
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--color-border-light);
+    padding: 0.25rem;
+    border-bottom: 1px solid var(--color-border-dark);
+    font-size: small;
 }
 
 #wifi-network-list > li:last-child {

@@ -25,9 +25,9 @@
             TV Cable Disconnected
         </div>
         <div class="clock-display">
-            <div class="time">12:00</div>
-            <div class="date">Monday, January 1</div>
-            <div class="meridiem">AM</div>
+            <div class="time"></div>
+            <div class="date"></div>
+            <div class="meridiem"></div>
         </div>
     </div>
 </main>
@@ -103,9 +103,23 @@
 
 <!-- Other modals (Member, Info, Delete) should follow a similar structure -->
 
+<!-- modal for setting active duration -->
+<div id="active-duration-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Set Active Duration</h2>
+        <div class="duration-options">
+            <button class="duration-btn" data-duration="15">15 min</button>
+            <button class="duration-btn" data-duration="30">30 min</button>
+            <button class="duration-btn" data-duration="45">45 min</button>
+            <button class="duration-btn" data-duration="60">1 hr</button>
+        </div>
+    </div>
+</div>
+
     <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal">
-        <div class="modal-content">J
+        <div class="modal-content">
             <h2>Delete Member</h2>
             <p>Are you sure you want to delete <span id="delete-member-name"></span>?</p>
             <div class="modal-actions">

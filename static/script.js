@@ -17,71 +17,69 @@ document.addEventListener("DOMContentLoaded", function () {
   const clockMeridiem = document.querySelector(".overlay .meridiem");
   const wifiForm = document.getElementById("wifi-form");
   const disconnectWifiBtn = document.getElementById("disconnect-wifi");
+  const activeDurationModal = document.getElementById("active-duration-modal");
+  const durationOptions = document.querySelectorAll(".duration-btn");
 
   wifiForm.addEventListener("submit", connectWifi);
   disconnectWifiBtn.addEventListener("click", disconnectWifi);
 
-  function updateClock() {
-    const now = new Date();
+function updateClock() {
+  const now = new Date();
 
-    // Update time
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-    const meridiem = hours >= 12 ? "PM" : "AM";
+  // Update time
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const meridiem = hours >= 12 ? "PM" : "AM";
 
-    // Convert to 12-hour format
-    hours = hours % 12;
-    hours = hours ? hours : 12; // Convert 0 to 12
+  // Convert to 12-hour format
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Convert 0 to 12
 
-    // Update date
-    const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
+  // Get elements
+  const timeEl = document.querySelector(".clock-display .time");
+  const dateEl = document.querySelector(".clock-display .date");
+  const meridiemEl = document.querySelector(".clock-display .meridiem");
 
-    clockTime.textContent = `${hours}:${minutes}`;
-    clockDate.textContent = `${days[now.getDay()]}, ${
-      months[now.getMonth()]
-    } ${now.getDate()}`;
-    clockMeridiem.textContent = meridiem;
-  }
+  // Update time display
+  timeEl.textContent = `${hours}:${minutes}`;
+  meridiemEl.textContent = meridiem;
 
-  function updateOverlayState(isTvCablePluggedIn) {
-    if (!isTvCablePluggedIn) {
-      overlay.classList.add("active");
-      // Start updating clock if overlay is shown
-      if (!window.clockInterval) {
-        updateClock(); // Initial update
-        window.clockInterval = setInterval(updateClock, 1000);
-      }
-    } else {
-      overlay.classList.remove("active");
-      // Stop clock updates if overlay is hidden
-      if (window.clockInterval) {
-        clearInterval(window.clockInterval);
-        window.clockInterval = null;
-      }
-    }
-  }
+  // Update date
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  dateEl.textContent = `${days[now.getDay()]}, ${
+    months[now.getMonth()]
+  } ${now.getDate()}`;
+}
+
+// Start the clock
+function startClock() {
+  updateClock(); // Initial update
+  setInterval(updateClock, 1000); // Update every second
+}
+
 
   function showLoader() {
     loader.style.display = "flex";
@@ -252,24 +250,86 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function toggleMemberActive(id) {
-    const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
-    if (!memberCard) return;
+let currentMemberId = null;
 
-    memberCard.classList.add("loading");
-    fetch(`/api/members/${id}/toggle_active`, { method: "POST" })
-      .then((response) => response.json())
-      .then(() => {
-        // Only fetch members to update UI
-        fetchMembers().then(() => {
-          memberCard.classList.remove("loading");
-        });
-      })
-      .catch((error) => {
-        console.error("Error toggling member active state:", error);
-        memberCard.classList.remove("loading");
-      });
+function toggleMemberActive(id) {
+  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+  if (!memberCard) return;
+
+  if (memberCard.classList.contains("active")) {
+    // If already active, set to inactive immediately
+    setMemberInactive(id);
+  } else {
+    // If inactive, show the duration modal
+    showActiveDurationModal(id);
   }
+}
+
+function showActiveDurationModal(id) {
+  currentMemberId = id;
+  activeDurationModal.style.display = "block";
+}
+
+function setMemberInactive(id) {
+  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+  memberCard.classList.add("loading");
+  fetch(`/api/members/${id}/toggle_active`, { method: "POST" })
+    .then((response) => response.json())
+    .then(() => {
+      fetchMembers();
+    })
+    .catch((error) => {
+      console.error("Error toggling member active state:", error);
+      memberCard.classList.remove("loading");
+    });
+}
+
+function setMemberActive(id, duration) {
+  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+  memberCard.classList.add("loading");
+  fetch(`/api/members/${id}/set_active`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ duration: duration }),
+  })
+    .then((response) => response.json())
+    .then(() => {
+      fetchMembers();
+      activeDurationModal.style.display = "none";
+    })
+    .catch((error) => {
+      console.error("Error setting member active:", error);
+      memberCard.classList.remove("loading");
+    });
+}
+
+durationOptions.forEach((btn) => {
+  btn.addEventListener("click", function () {
+    const duration = parseInt(this.getAttribute("data-duration"));
+    setMemberActive(currentMemberId, duration);
+  });
+});
+
+// Close the active duration modal when clicking outside or on the close button
+activeDurationModal.addEventListener("click", function (event) {
+  if (
+    event.target === activeDurationModal ||
+    event.target.classList.contains("close")
+  ) {
+    activeDurationModal.style.display = "none";
+  }
+});
+
+// Update the existing event listener for member cards
+membersContainerEl.addEventListener("click", function (event) {
+  const memberCard = event.target.closest(".member-card");
+  if (memberCard && !event.target.closest(".card-btn")) {
+    const memberId = memberCard.getAttribute("data-id");
+    toggleMemberActive(memberId);
+  }
+});
 
   Array.from(closeBtns).forEach((btn) =>
     btn.addEventListener("click", closeModal)
@@ -590,6 +650,8 @@ function disconnectWifi() {
   // Fetch Wi-Fi networks on page load
   fetchWifiNetworks();
 
+  startClock()
+  
   // Refresh Wi-Fi networks every 30 seconds
   setInterval(fetchWifiNetworks, 30000);
 

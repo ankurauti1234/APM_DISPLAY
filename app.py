@@ -8,7 +8,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 import sys
 import threading
 import subprocess
-import re
+import time
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QShortcut
@@ -43,7 +43,8 @@ def init_db():
                   name TEXT,
                   age INTEGER,
                   gender TEXT,
-                  is_active BOOLEAN)''')
+                  is_active BOOLEAN,
+                  active_until TIMESTAMP)''')
     
     # Insert dummy data into system_status
     c.execute('''INSERT OR IGNORE INTO system_status
@@ -73,7 +74,7 @@ def get_system_status():
         is_tv_cable_plugged_in = bool(row[5])
         
         if not is_tv_cable_plugged_in:
-            c.execute('UPDATE members SET is_active = 0')
+            c.execute('UPDATE members SET is_active = 0, active_until = NULL')
             conn.commit()
             
             current_member_states = get_member_states()
@@ -104,7 +105,7 @@ def members():
     
     if request.method == 'POST':
         data = request.json
-        c.execute('INSERT INTO members (name, age, gender, is_active) VALUES (?, ?, ?, ?)',
+        c.execute('INSERT INTO members (name, age, gender, is_active, active_until) VALUES (?, ?, ?, ?, NULL)',
                   (data['name'], data['age'], data['gender'], False))
         conn.commit()
         member_id = c.lastrowid
@@ -124,34 +125,31 @@ def members():
     conn.close()
     return jsonify(members)
 
-@app.route('/api/members/<int:member_id>', methods=['GET', 'PUT', 'DELETE'])
-def update_delete_member(member_id):
+@app.route('/api/members/<int:member_id>/set_active', methods=['POST'])
+def set_member_active(member_id):
+    global last_known_member_states
     conn = sqlite3.connect('system_status.db')
     c = conn.cursor()
     
-    if request.method == 'GET':
-        c.execute('SELECT * FROM members WHERE id=?', (member_id,))
-        member = c.fetchone()
-        if member:
-            return jsonify({'id': member[0], 'name': member[1], 'age': member[2], 'gender': member[3], 'is_active': bool(member[4])})
-        else:
-            return jsonify({'error': 'Member not found'}), 404
+    data = request.json
+    duration = data.get('duration', 0)
     
-    elif request.method == 'PUT':
-        data = request.json
-        c.execute('UPDATE members SET name=?, age=?, gender=? WHERE id=?',
-                  (data['name'], data['age'], data['gender'], member_id))
-        conn.commit()
-        conn.close()
-        publish_mqtt_message()
-        return jsonify({'message': 'Member updated successfully'})
+    if duration > 0:
+        active_until = time.time() + (duration * 60)  # Convert minutes to seconds
+        c.execute('UPDATE members SET is_active = 1, active_until = ? WHERE id = ?', (active_until, member_id))
+    else:
+        c.execute('UPDATE members SET is_active = 1, active_until = NULL WHERE id = ?', (member_id,))
     
-    elif request.method == 'DELETE':
-        c.execute('DELETE FROM members WHERE id=?', (member_id,))
-        conn.commit()
-        conn.close()
+    conn.commit()
+    
+    current_member_states = get_member_states()
+    
+    if current_member_states != last_known_member_states:
         publish_mqtt_message()
-        return jsonify({'message': 'Member deleted successfully'})
+        last_known_member_states = current_member_states
+    
+    conn.close()
+    return jsonify({'message': f'Member set active for {duration} minutes'})
 
 @app.route('/api/members/<int:member_id>/toggle_active', methods=['POST'])
 def toggle_member_active(member_id):
@@ -166,7 +164,10 @@ def toggle_member_active(member_id):
         return jsonify({'error': 'Member not found'}), 404
     
     new_state = not bool(current_state[0])
-    c.execute('UPDATE members SET is_active = ? WHERE id=?', (new_state, member_id))
+    if new_state:
+        c.execute('UPDATE members SET is_active = 1, active_until = NULL WHERE id=?', (member_id,))
+    else:
+        c.execute('UPDATE members SET is_active = 0, active_until = NULL WHERE id=?', (member_id,))
     conn.commit()
     
     current_member_states = get_member_states()
@@ -178,6 +179,21 @@ def toggle_member_active(member_id):
     conn.close()
     return jsonify({'message': f'Member active state toggled to {new_state}'})
 
+def check_active_durations():
+    while True:
+        conn = sqlite3.connect('system_status.db')
+        c = conn.cursor()
+        current_time = time.time()
+        c.execute('UPDATE members SET is_active = 0, active_until = NULL WHERE active_until IS NOT NULL AND active_until <= ?', (current_time,))
+        if c.rowcount > 0:
+            conn.commit()
+            publish_mqtt_message()
+        conn.close()
+        time.sleep(60)  # Check every minute
+
+# Start the background thread to check active durations
+active_duration_thread = threading.Thread(target=check_active_durations, daemon=True)
+active_duration_thread.start()
 @app.route('/api/wifi/connect', methods=['POST'])
 def connect_wifi():
     data = request.json
