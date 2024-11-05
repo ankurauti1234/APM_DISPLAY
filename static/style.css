@@ -957,3 +957,28 @@ main {
   border-radius: 0.5rem;
   font-size: larger;
 }
+
+/* Add these styles to your existing CSS file */
+
+#shutdown-btn {
+    margin-left: 10px;
+}
+
+#shutdown-modal .modal-content {
+    max-width: 300px;
+}
+
+#shutdown-modal .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#shutdown-modal .modal-actions button {
+    flex: 1;
+    margin: 0 5px;
+}
+
+.setting-buttons-container{
+  display: flex; gap: 6px;
+}

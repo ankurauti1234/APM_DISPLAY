@@ -36,9 +36,14 @@
             <button id="info-btn" class="footer-btn">
                 <span class="material-icons">info</span>
             </button>
+<div class="setting-buttons-container">
+                <button id="shutdown-btn" class="footer-btn">
+    <span class="material-icons">power_settings_new</span>
+</button>
             <button id="settings-btn" class="footer-btn">
                 <span class="material-icons">settings</span>
             </button>
+</div>
         </footer>
     </div>
 
@@ -128,6 +133,20 @@
             </div>
         </div>
     </div>
+
+
+<!-- Add this modal at the end of the body, before the closing </body> tag -->
+<div id="shutdown-modal" class="modal">
+    <div class="modal-content">
+        <h2>System Power Options</h2>
+        <p>Choose an action:</p>
+        <div class="modal-actions">
+            <button id="restart-btn" class="primary-btn">Restart</button>
+            <button id="shutdown-confirm-btn" class="danger-btn">Shut Down</button>
+            <button id="cancel-shutdown" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+</div>
 
     <!-- Virtual Keyboard -->
     <!-- <div id="virtual-keyboard" class="keyboard-container">

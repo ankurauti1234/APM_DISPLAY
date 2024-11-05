@@ -251,86 +251,86 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentMemberId = null;
 
-function toggleMemberActive(id) {
-  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
-  if (!memberCard) return;
+  function toggleMemberActive(id) {
+    const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+    if (!memberCard) return;
 
-  if (memberCard.classList.contains("active")) {
-    // If already active, set to inactive immediately
-    setMemberInactive(id);
-  } else {
-    // If inactive, show the duration modal
-    showActiveDurationModal(id);
+    if (memberCard.classList.contains("active")) {
+      // If already active, set to inactive immediately
+      setMemberInactive(id);
+    } else {
+      // If inactive, show the duration modal
+      showActiveDurationModal(id);
+    }
   }
-}
 
-// Add these new functions
-function showActiveDurationModal(id) {
-  currentMemberId = id;
-  activeDurationModal.style.display = "block";
-}
+  // Add these new functions
+  function showActiveDurationModal(id) {
+    currentMemberId = id;
+    activeDurationModal.style.display = "block";
+  }
 
-function setMemberInactive(id) {
-  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
-  memberCard.classList.add("loading");
-  fetch(`/api/members/${id}/toggle_active`, { method: "POST" })
-    .then((response) => response.json())
-    .then(() => {
-      fetchMembers();
+  function setMemberInactive(id) {
+    const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+    memberCard.classList.add("loading");
+    fetch(`/api/members/${id}/toggle_active`, { method: "POST" })
+      .then((response) => response.json())
+      .then(() => {
+        fetchMembers();
+      })
+      .catch((error) => {
+        console.error("Error toggling member active state:", error);
+        memberCard.classList.remove("loading");
+      });
+  }
+
+  function setMemberActive(id, duration) {
+    const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
+    memberCard.classList.add("loading");
+    fetch(`/api/members/${id}/set_active`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ duration: duration }),
     })
-    .catch((error) => {
-      console.error("Error toggling member active state:", error);
-      memberCard.classList.remove("loading");
-    });
-}
+      .then((response) => response.json())
+      .then(() => {
+        fetchMembers();
+        activeDurationModal.style.display = "none";
+      })
+      .catch((error) => {
+        console.error("Error setting member active:", error);
+        memberCard.classList.remove("loading");
+      });
+  }
 
-function setMemberActive(id, duration) {
-  const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
-  memberCard.classList.add("loading");
-  fetch(`/api/members/${id}/set_active`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ duration: duration }),
-  })
-    .then((response) => response.json())
-    .then(() => {
-      fetchMembers();
-      activeDurationModal.style.display = "none";
-    })
-    .catch((error) => {
-      console.error("Error setting member active:", error);
-      memberCard.classList.remove("loading");
+  // Add event listeners for duration buttons
+  durationOptions.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const duration = parseInt(this.getAttribute("data-duration"));
+      setMemberActive(currentMemberId, duration);
     });
-}
-
-// Add event listeners for duration buttons
-durationOptions.forEach((btn) => {
-  btn.addEventListener("click", function () {
-    const duration = parseInt(this.getAttribute("data-duration"));
-    setMemberActive(currentMemberId, duration);
   });
-});
 
-// Close the active duration modal when clicking outside or on the close button
-activeDurationModal.addEventListener("click", function (event) {
-  if (
-    event.target === activeDurationModal ||
-    event.target.classList.contains("close")
-  ) {
-    activeDurationModal.style.display = "none";
-  }
-});
+  // Close the active duration modal when clicking outside or on the close button
+  activeDurationModal.addEventListener("click", function (event) {
+    if (
+      event.target === activeDurationModal ||
+      event.target.classList.contains("close")
+    ) {
+      activeDurationModal.style.display = "none";
+    }
+  });
 
-// Update the existing event listener for member cards
-membersContainerEl.addEventListener("click", function (event) {
-  const memberCard = event.target.closest(".member-card");
-  if (memberCard && !event.target.closest(".card-btn")) {
-    const memberId = memberCard.getAttribute("data-id");
-    toggleMemberActive(memberId);
-  }
-});
+  // Update the existing event listener for member cards
+  membersContainerEl.addEventListener("click", function (event) {
+    const memberCard = event.target.closest(".member-card");
+    if (memberCard && !event.target.closest(".card-btn")) {
+      const memberId = memberCard.getAttribute("data-id");
+      toggleMemberActive(memberId);
+    }
+  });
 
   Array.from(closeBtns).forEach((btn) =>
     btn.addEventListener("click", closeModal)
@@ -571,27 +571,27 @@ membersContainerEl.addEventListener("click", function (event) {
 
   // Initialize keyboard
 
-    initializeKeyboard();
+  initializeKeyboard();
 
-    // Add input focus listeners
-    const inputs = document.querySelectorAll(
-      'input[type="text"], input[type="password"], input[type="number"]'
-    );
-    inputs.forEach((input) => {
-      input.addEventListener("focus", () => showKeyboard(input));
-    });
+  // Add input focus listeners
+  const inputs = document.querySelectorAll(
+    'input[type="text"], input[type="password"], input[type="number"]'
+  );
+  inputs.forEach((input) => {
+    input.addEventListener("focus", () => showKeyboard(input));
+  });
 
-    // Hide keyboard when clicking outside
-    document.addEventListener("click", (e) => {
-      if (
-        !keyboard.contains(e.target) &&
-        !e.target.matches(
-          'input[type="text"], input[type="password"], input[type="number"]'
-        )
-      ) {
-        hideKeyboard();
-      }
-    });
+  // Hide keyboard when clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      !keyboard.contains(e.target) &&
+      !e.target.matches(
+        'input[type="text"], input[type="password"], input[type="number"]'
+      )
+    ) {
+      hideKeyboard();
+    }
+  });
 
   // Delete Confirmation Modal Setup
   const deleteModal = document.getElementById("delete-modal");
@@ -711,6 +711,47 @@ membersContainerEl.addEventListener("click", function (event) {
     if (event.target === deleteModal) {
       deleteModal.style.display = "none";
       pendingDeleteId = null;
+    }
+  });
+
+  // Add these variables at the top of your script
+  const shutdownBtn = document.getElementById("shutdown-btn");
+  const shutdownModal = document.getElementById("shutdown-modal");
+  const restartBtn = document.getElementById("restart-btn");
+  const shutdownConfirmBtn = document.getElementById("shutdown-confirm-btn");
+  const cancelShutdownBtn = document.getElementById("cancel-shutdown");
+
+  // Add event listeners
+  shutdownBtn.addEventListener("click", showShutdownModal);
+  restartBtn.addEventListener("click", () => performAction("restart"));
+  shutdownConfirmBtn.addEventListener("click", () => performAction("shutdown"));
+  cancelShutdownBtn.addEventListener("click", hideShutdownModal);
+
+  function showShutdownModal() {
+    shutdownModal.style.display = "block";
+  }
+
+  function hideShutdownModal() {
+    shutdownModal.style.display = "none";
+  }
+
+  function performAction(action) {
+    fetch(`/api/${action}`, { method: "POST" })
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
+        hideShutdownModal();
+      })
+      .catch((error) => {
+        console.error(`Error during ${action}:`, error);
+        alert(`Failed to ${action}. Please try again.`);
+      });
+  }
+
+  // Close the shutdown modal when clicking outside
+  window.addEventListener("click", (event) => {
+    if (event.target === shutdownModal) {
+      hideShutdownModal();
     }
   });
 

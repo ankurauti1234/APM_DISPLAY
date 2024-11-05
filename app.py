@@ -1,5 +1,5 @@
 import sqlite3
-import json
+import os
 from flask import Flask, render_template, request, jsonify
 from mqtt_publisher import publish_mqtt_message
 from PyQt5 import QtWidgets
@@ -60,6 +60,22 @@ init_db()
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/api/shutdown', methods=['POST'])
+def shutdown():
+    try:
+        os.system('sudo shutdown -h now')
+        return jsonify({"message": "Shutting down the system..."}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to shut down: {str(e)}"}), 500
+
+@app.route('/api/restart', methods=['POST'])
+def restart():
+    try:
+        os.system('sudo reboot')
+        return jsonify({"message": "Restarting the system..."}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to restart: {str(e)}"}), 500
 
 @app.route('/api/system_status')
 def get_system_status():
