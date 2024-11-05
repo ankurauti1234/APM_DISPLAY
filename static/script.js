@@ -23,63 +23,62 @@ document.addEventListener("DOMContentLoaded", function () {
   wifiForm.addEventListener("submit", connectWifi);
   disconnectWifiBtn.addEventListener("click", disconnectWifi);
 
-function updateClock() {
-  const now = new Date();
+  function updateClock() {
+    const now = new Date();
 
-  // Update time
-  let hours = now.getHours();
-  const minutes = now.getMinutes().toString().padStart(2, "0");
-  const meridiem = hours >= 12 ? "PM" : "AM";
+    // Update time
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const meridiem = hours >= 12 ? "PM" : "AM";
 
-  // Convert to 12-hour format
-  hours = hours % 12;
-  hours = hours ? hours : 12; // Convert 0 to 12
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12
 
-  // Get elements
-  const timeEl = document.querySelector(".clock-display .time");
-  const dateEl = document.querySelector(".clock-display .date");
-  const meridiemEl = document.querySelector(".clock-display .meridiem");
+    // Get elements
+    const timeEl = document.querySelector(".clock-display .time");
+    const dateEl = document.querySelector(".clock-display .date");
+    const meridiemEl = document.querySelector(".clock-display .meridiem");
 
-  // Update time display
-  timeEl.textContent = `${hours}:${minutes}`;
-  meridiemEl.textContent = meridiem;
+    // Update time display
+    timeEl.textContent = `${hours}:${minutes}`;
+    meridiemEl.textContent = meridiem;
 
-  // Update date
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+    // Update date
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
 
-  dateEl.textContent = `${days[now.getDay()]}, ${
-    months[now.getMonth()]
-  } ${now.getDate()}`;
-}
+    dateEl.textContent = `${days[now.getDay()]}, ${
+      months[now.getMonth()]
+    } ${now.getDate()}`;
+  }
 
-// Start the clock
-function startClock() {
-  updateClock(); // Initial update
-  setInterval(updateClock, 1000); // Update every second
-}
-
+  // Start the clock
+  function startClock() {
+    updateClock(); // Initial update
+    setInterval(updateClock, 1000); // Update every second
+  }
 
   function showLoader() {
     loader.style.display = "flex";
@@ -250,7 +249,7 @@ function startClock() {
       });
   }
 
-let currentMemberId = null;
+  let currentMemberId = null;
 
 function toggleMemberActive(id) {
   const memberCard = document.querySelector(`.member-card[data-id="${id}"]`);
@@ -265,6 +264,7 @@ function toggleMemberActive(id) {
   }
 }
 
+// Add these new functions
 function showActiveDurationModal(id) {
   currentMemberId = id;
   activeDurationModal.style.display = "block";
@@ -305,6 +305,7 @@ function setMemberActive(id, duration) {
     });
 }
 
+// Add event listeners for duration buttons
 durationOptions.forEach((btn) => {
   btn.addEventListener("click", function () {
     const duration = parseInt(this.getAttribute("data-duration"));
@@ -363,61 +364,73 @@ membersContainerEl.addEventListener("click", function (event) {
   const keyboard = document.getElementById("virtual-keyboard");
   let currentInput = null;
   let isShiftActive = false;
+  let isSymbolsActive = false;
 
   const keys = {
     numbers: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+    symbols1: ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")"],
+    symbols2: ["-", "_", "=", "+", "[", "]", "{", "}", "|", "\\"],
+    symbols3: [";", ":", "'", '"', ",", ".", "<", ">", "?", "/"],
     topRow: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
     middleRow: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-    bottomRow: ["z", "x", "c", "v", "b", "n", "m", "Backspace"],
+    bottomRow: ["z", "x", "c", "v", "b", "n", "m"],
   };
 
   function initializeKeyboard() {
-    // Number row
-    const numberRow = document.getElementById("number-row");
-    keys.numbers.forEach((key) => {
-      const button = createKeyButton(key);
-      numberRow.appendChild(button);
-    });
+    // Create keyboard layout container
+    keyboard.innerHTML = `
+    <div class="keyboard">
+      <div class="keyboard-row" id="number-row"></div>
+      <div class="keyboard-row" id="symbols1-row"></div>
+      <div class="keyboard-row" id="symbols2-row"></div>
+      <div class="keyboard-row" id="symbols3-row"></div>
+      <div class="keyboard-row" id="top-row"></div>
+      <div class="keyboard-row" id="middle-row"></div>
+      <div class="keyboard-row" id="bottom-row"></div>
+      <div class="keyboard-row" id="action-row">
+        <button class="keyboard-key shift-key">Shift</button>
+        <button class="keyboard-key symbols-key">!#$</button>
+        <button class="keyboard-key space-key">Space</button>
+        <button class="keyboard-key backspace-key">←</button>
+        <button class="keyboard-key enter-key">Enter</button>
+      </div>
+    </div>
+  `;
 
-    // Top row
-    const topRow = document.getElementById("top-row");
-    keys.topRow.forEach((key) => {
-      const button = createKeyButton(key);
-      topRow.appendChild(button);
-    });
+    // Initialize all rows
+    initializeRow("number-row", keys.numbers);
+    initializeRow("symbols1-row", keys.symbols1);
+    initializeRow("symbols2-row", keys.symbols2);
+    initializeRow("symbols3-row", keys.symbols3);
+    initializeRow("top-row", keys.topRow);
+    initializeRow("middle-row", keys.middleRow);
+    initializeRow("bottom-row", keys.bottomRow);
 
-    // Middle row
-    const middleRow = document.getElementById("middle-row");
-    const shiftKey = createKeyButton("CapsLk");
-    shiftKey.classList.add("shift-key");
-    middleRow.appendChild(shiftKey);
-    keys.middleRow.forEach((key) => {
-      const button = createKeyButton(key);
-      middleRow.appendChild(button);
-    });
-
-    // Bottom row
-    const bottomRow = document.getElementById("bottom-row");
-    keys.bottomRow.forEach((key) => {
-      const button = createKeyButton(key);
-      if (key === "Backspace") {
-        button.innerHTML = "←";
-        button.classList.add("backspace-key");
-      }
-      bottomRow.appendChild(button);
-    });
-
-    // Add event listeners for keyboard special keys
+    // Add event listeners for special keys
     document.querySelector(".shift-key").addEventListener("click", toggleShift);
+    document
+      .querySelector(".symbols-key")
+      .addEventListener("click", toggleSymbols);
     document
       .querySelector(".space-key")
       .addEventListener("click", () => handleInput(" "));
     document
-      .querySelector(".enter-key")
-      .addEventListener("click", hideKeyboard);
-    document
       .querySelector(".backspace-key")
       .addEventListener("click", handleBackspace);
+    document
+      .querySelector(".enter-key")
+      .addEventListener("click", hideKeyboard);
+
+    // Initially hide symbol rows
+    toggleSymbolRows(false);
+  }
+
+  function initializeRow(rowId, keys) {
+    const row = document.getElementById(rowId);
+    keys.forEach((key) => {
+      const button = createKeyButton(key);
+      row.appendChild(button);
+    });
   }
 
   function createKeyButton(key) {
@@ -425,7 +438,6 @@ membersContainerEl.addEventListener("click", function (event) {
     button.className = "keyboard-key";
     button.textContent = key;
     if (key.length === 1) {
-      // Regular keys
       button.addEventListener("click", () => handleInput(key));
     }
     return button;
@@ -435,6 +447,24 @@ membersContainerEl.addEventListener("click", function (event) {
     isShiftActive = !isShiftActive;
     document.querySelector(".shift-key").classList.toggle("active");
     updateKeyboardCase();
+  }
+
+  function toggleSymbols() {
+    isSymbolsActive = !isSymbolsActive;
+    document.querySelector(".symbols-key").classList.toggle("active");
+    toggleSymbolRows(isSymbolsActive);
+  }
+
+  function toggleSymbolRows(show) {
+    const symbolRows = [
+      document.getElementById("symbols1-row"),
+      document.getElementById("symbols2-row"),
+      document.getElementById("symbols3-row"),
+    ];
+
+    symbolRows.forEach((row) => {
+      row.style.display = show ? "flex" : "none";
+    });
   }
 
   function updateKeyboardCase() {
@@ -473,54 +503,95 @@ membersContainerEl.addEventListener("click", function (event) {
     currentInput = input;
     keyboard.style.display = "block";
 
+    // Reset keyboard state
+    isShiftActive = false;
+    isSymbolsActive = false;
+    document.querySelector(".shift-key")?.classList.remove("active");
+    document.querySelector(".symbols-key")?.classList.remove("active");
+
     // Switch keyboard layout based on input type
     if (input.type === "number") {
-      keyboard.classList.add("number-keyboard");
-      // Hide letter rows
-      document.getElementById("top-row").style.display = "none";
-      document.getElementById("middle-row").style.display = "none";
-      document.getElementById("bottom-row").style.display = "none";
-      document.querySelector(".space-key").style.display = "none";
+      showNumberKeyboard();
+    } else if (input.type === "password") {
+      showPasswordKeyboard();
     } else {
-      keyboard.classList.remove("number-keyboard");
-      // Show all rows
-      document.getElementById("top-row").style.display = "flex";
-      document.getElementById("middle-row").style.display = "flex";
-      document.getElementById("bottom-row").style.display = "flex";
-      document.querySelector(".space-key").style.display = "block";
+      showFullKeyboard();
     }
+
+    updateKeyboardCase();
+  }
+
+  function showNumberKeyboard() {
+    // Show only number row and hide others
+    const rows = keyboard.querySelectorAll(".keyboard-row");
+    rows.forEach((row) => {
+      if (row.id === "number-row" || row.id === "action-row") {
+        row.style.display = "flex";
+      } else {
+        row.style.display = "none";
+      }
+    });
+
+    // Hide unnecessary action buttons
+    keyboard.querySelector(".shift-key").style.display = "none";
+    keyboard.querySelector(".symbols-key").style.display = "none";
+    keyboard.querySelector(".space-key").style.display = "none";
+  }
+
+  function showPasswordKeyboard() {
+    // Show all rows but keep symbols hidden initially
+    const rows = keyboard.querySelectorAll(".keyboard-row");
+    rows.forEach((row) => (row.style.display = "flex"));
+    toggleSymbolRows(false);
+
+    // Show all action buttons
+    keyboard.querySelector(".shift-key").style.display = "block";
+    keyboard.querySelector(".symbols-key").style.display = "block";
+    keyboard.querySelector(".space-key").style.display = "block";
+  }
+
+  function showFullKeyboard() {
+    // Show all rows except symbols
+    const rows = keyboard.querySelectorAll(".keyboard-row");
+    rows.forEach((row) => (row.style.display = "flex"));
+    toggleSymbolRows(false);
+
+    // Show all action buttons
+    keyboard.querySelector(".shift-key").style.display = "block";
+    keyboard.querySelector(".symbols-key").style.display = "block";
+    keyboard.querySelector(".space-key").style.display = "block";
   }
 
   function hideKeyboard() {
     keyboard.style.display = "none";
     currentInput = null;
     isShiftActive = false;
-    document.querySelector(".shift-key")?.classList.remove("active");
-    updateKeyboardCase();
+    isSymbolsActive = false;
   }
 
   // Initialize keyboard
-  initializeKeyboard();
 
-  // Add input focus listeners
-  const inputs = document.querySelectorAll(
-    'input[type="text"], input[type="password"], input[type="number"]'
-  );
-  inputs.forEach((input) => {
-    input.addEventListener("focus", () => showKeyboard(input));
-  });
+    initializeKeyboard();
 
-  // Hide keyboard when clicking outside
-  document.addEventListener("click", (e) => {
-    if (
-      !keyboard.contains(e.target) &&
-      !e.target.matches(
-        'input[type="text"], input[type="password"], input[type="number"]'
-      )
-    ) {
-      hideKeyboard();
-    }
-  });
+    // Add input focus listeners
+    const inputs = document.querySelectorAll(
+      'input[type="text"], input[type="password"], input[type="number"]'
+    );
+    inputs.forEach((input) => {
+      input.addEventListener("focus", () => showKeyboard(input));
+    });
+
+    // Hide keyboard when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !keyboard.contains(e.target) &&
+        !e.target.matches(
+          'input[type="text"], input[type="password"], input[type="number"]'
+        )
+      ) {
+        hideKeyboard();
+      }
+    });
 
   // Delete Confirmation Modal Setup
   const deleteModal = document.getElementById("delete-modal");
@@ -551,76 +622,75 @@ membersContainerEl.addEventListener("click", function (event) {
       });
   }
 
-  
-function fetchWifiNetworks() {
-  showLoader();
-  fetch("/api/wifi/networks")
-    .then((response) => response.json())
-    .then((data) => {
-      const networkList = document.getElementById("wifi-network-list");
-      networkList.innerHTML = "";
-      data.forEach((network) => {
-        const li = document.createElement("li");
-        li.textContent = `${network.ssid} (Signal: ${network.signal_strength})`;
-        li.addEventListener("click", () => {
-          document.getElementById("wifi-ssid").value = network.ssid;
+  function fetchWifiNetworks() {
+    showLoader();
+    fetch("/api/wifi/networks")
+      .then((response) => response.json())
+      .then((data) => {
+        const networkList = document.getElementById("wifi-network-list");
+        networkList.innerHTML = "";
+        data.forEach((network) => {
+          const li = document.createElement("li");
+          li.textContent = `${network.ssid} (Signal: ${network.signal_strength})`;
+          li.addEventListener("click", () => {
+            document.getElementById("wifi-ssid").value = network.ssid;
+          });
+          networkList.appendChild(li);
         });
-        networkList.appendChild(li);
+      })
+      .catch((error) => {
+        console.error("Error fetching Wi-Fi networks:", error);
+      })
+      .finally(() => {
+        hideLoader();
       });
-    })
-    .catch((error) => {
-      console.error("Error fetching Wi-Fi networks:", error);
-    })
-    .finally(() => {
-      hideLoader();
-    });
-}
+  }
 
-function connectWifi(event) {
-  event.preventDefault();
-  const ssid = document.getElementById("wifi-ssid").value;
-  const password = document.getElementById("wifi-password").value;
+  function connectWifi(event) {
+    event.preventDefault();
+    const ssid = document.getElementById("wifi-ssid").value;
+    const password = document.getElementById("wifi-password").value;
 
-  showLoader();
-  fetch("/api/wifi/connect", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ssid, password }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      alert(data.message);
-      fetchWifiNetworks();
+    showLoader();
+    fetch("/api/wifi/connect", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ssid, password }),
     })
-    .catch((error) => {
-      console.error("Error connecting to Wi-Fi:", error);
-      alert("Error connecting to Wi-Fi.");
-    })
-    .finally(() => {
-      hideLoader();
-    });
-}
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
+        fetchWifiNetworks();
+      })
+      .catch((error) => {
+        console.error("Error connecting to Wi-Fi:", error);
+        alert("Error connecting to Wi-Fi.");
+      })
+      .finally(() => {
+        hideLoader();
+      });
+  }
 
-function disconnectWifi() {
-  showLoader();
-  fetch("/api/wifi/disconnect", {
-    method: "POST",
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      alert(data.message);
-      fetchWifiNetworks();
+  function disconnectWifi() {
+    showLoader();
+    fetch("/api/wifi/disconnect", {
+      method: "POST",
     })
-    .catch((error) => {
-      console.error("Error disconnecting from Wi-Fi:", error);
-      alert("Error disconnecting from Wi-Fi.");
-    })
-    .finally(() => {
-      hideLoader();
-    });
-}
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
+        fetchWifiNetworks();
+      })
+      .catch((error) => {
+        console.error("Error disconnecting from Wi-Fi:", error);
+        alert("Error disconnecting from Wi-Fi.");
+      })
+      .finally(() => {
+        hideLoader();
+      });
+  }
 
   // Confirm delete button handler
   confirmDeleteBtn.addEventListener("click", () => {
@@ -650,8 +720,8 @@ function disconnectWifi() {
   // Fetch Wi-Fi networks on page load
   fetchWifiNetworks();
 
-  startClock()
-  
+  startClock();
+
   // Refresh Wi-Fi networks every 30 seconds
   setInterval(fetchWifiNetworks, 30000);
 

@@ -571,7 +571,7 @@ main::-webkit-scrollbar-thumb:hover {
 }
 
 .keyboard {
-  max-width: 800px;
+  max-width: 98%;
   margin: 0 auto;
 }
 
@@ -618,7 +618,7 @@ main::-webkit-scrollbar-thumb:hover {
 }
 
 .enter-key {
-  width: 80px;
+  width: 160px;
   background-color: var(--color-primary);
   color: var(--color-primary-contrast);
 }
@@ -943,4 +943,17 @@ main {
         padding-top: 2rem;
         margin-top: 2rem;
     }
+}
+
+.duration-options{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.duration-btn{
+  padding: 6px;
+  background-color: var(--color-border-light);
+  border-radius: 0.5rem;
+  font-size: larger;
 }
