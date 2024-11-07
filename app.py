@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from flask import Flask, render_template, request, jsonify
+import xml.etree.ElementTree as ET
 from mqtt_publisher import publish_mqtt_message
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QUrl, Qt
@@ -210,6 +211,21 @@ def check_active_durations():
 # Start the background thread to check active durations
 active_duration_thread = threading.Thread(target=check_active_durations, daemon=True)
 active_duration_thread.start()
+def save_network_config(ssid, password):
+    # Create .saved-networks folder if it doesn't exist
+    save_dir = os.path.join(os.path.dirname(__file__), '.saved-networks')
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Create XML structure
+    root = ET.Element("network")
+    ET.SubElement(root, "ssid").text = ssid
+    ET.SubElement(root, "password").text = password
+
+    # Save XML file
+    tree = ET.ElementTree(root)
+    file_path = os.path.join(save_dir, f"{ssid}.xml")
+    tree.write(file_path)
+
 @app.route('/api/wifi/connect', methods=['POST'])
 def connect_wifi():
     data = request.json
@@ -231,6 +247,9 @@ def connect_wifi():
             'sudo', 'nmcli', 'device', 'wifi', 'connect', ssid,
             'password', password
         ], check=True)
+        
+        # Save network configuration
+        save_network_config(ssid, password)
         
         return jsonify({"message": "Connected successfully!"}), 200
     except subprocess.CalledProcessError as e:

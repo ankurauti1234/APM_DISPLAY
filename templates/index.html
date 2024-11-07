@@ -17,37 +17,37 @@
             <div id="current-time"></div>
         </header>
 
-<main>
-    <div id="members-container"></div>
-    <div class="overlay">
-        <div class="tv-status">
-            <span class="material-icons small">warning</span>
-            TV Cable Disconnected
-        </div>
-        <div class="clock-display">
-            <div class="time"></div>
-            <div class="date"></div>
-            <div class="meridiem"></div>
-        </div>
-    </div>
-</main>
+        <main>
+            <div id="members-container"></div>
+            <div class="overlay">
+                <div class="tv-status">
+                    <span class="material-icons small">warning</span>
+                    TV Cable Disconnected
+                </div>
+                <div class="clock-display">
+                    <div class="time"></div>
+                    <div class="date"></div>
+                    <div class="meridiem"></div>
+                </div>
+            </div>
+        </main>
 
         <footer>
             <button id="info-btn" class="footer-btn">
                 <span class="material-icons">info</span>
             </button>
-<div class="setting-buttons-container">
+            <div class="setting-buttons-container">
                 <button id="shutdown-btn" class="footer-btn">
-    <span class="material-icons">power_settings_new</span>
-</button>
-            <button id="settings-btn" class="footer-btn">
-                <span class="material-icons">settings</span>
-            </button>
-</div>
+                    <span class="material-icons">power_settings_new</span>
+                </button>
+                <button id="settings-btn" class="footer-btn">
+                    <span class="material-icons">settings</span>
+                </button>
+            </div>
         </footer>
     </div>
 
-    <!-- Member Modal -->
+    <!-- Modals -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -68,7 +68,6 @@
         </div>
     </div>
 
-    <!-- Info Modal -->
     <div id="info-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -77,52 +76,46 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
-<!-- Network Settings Modal -->
-<div id="settings-modal" class="modal">
-    <div class="modal-content setting-content">
-        <span class="close">&times;</span>
-        <h2>Network Settings</h2>
-        <div class="network-settings-layout">
-            <div class="network-form-container">
-                <form id="wifi-form">
-                    <div class="input-group">
-                        <label for="wifi-ssid">Wi-Fi SSID:</label>
-                        <input type="text" id="wifi-ssid" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="wifi-password">Password:</label>
-                        <input type="password" id="wifi-password" required>
-                    </div>
-                    <button type="submit" class="primary-btn">Connect</button>
-                </form>
-                <button id="disconnect-wifi" class="secondary-btn">Disconnect</button>
-            </div>
-            <div class="network-list-container">
-                <h3>Available Networks</h3>
-                <ul id="wifi-network-list"></ul>
+    <div id="settings-modal" class="modal">
+        <div class="modal-content setting-content">
+            <span class="close">&times;</span>
+            <h2>Network Settings</h2>
+            <div class="network-settings-layout">
+                <div class="network-form-container">
+                    <form id="wifi-form">
+                        <div class="input-group">
+                            <label for="wifi-ssid">Wi-Fi SSID:</label>
+                            <input type="text" id="wifi-ssid" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="wifi-password">Password:</label>
+                            <input type="password" id="wifi-password" required>
+                        </div>
+                        <button type="submit" class="primary-btn">Connect</button>
+                    </form>
+                    <button id="disconnect-wifi" class="secondary-btn">Disconnect</button>
+                </div>
+                <div class="network-list-container">
+                    <h3>Available Networks</h3>
+                    <ul id="wifi-network-list"></ul>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Other modals (Member, Info, Delete) should follow a similar structure -->
-
-<!-- modal for setting active duration -->
-<div id="active-duration-modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Set Active Duration</h2>
-        <div class="duration-options">
-            <button class="duration-btn" data-duration="15">15 min</button>
-            <button class="duration-btn" data-duration="30">30 min</button>
-            <button class="duration-btn" data-duration="45">45 min</button>
-            <button class="duration-btn" data-duration="60">1 hr</button>
+    <div id="active-duration-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Set Active Duration</h2>
+            <div class="duration-options">
+                <button class="duration-btn" data-duration="15">15 min</button>
+                <button class="duration-btn" data-duration="30">30 min</button>
+                <button class="duration-btn" data-duration="45">45 min</button>
+                <button class="duration-btn" data-duration="60">1 hr</button>
+            </div>
         </div>
     </div>
-</div>
 
-    <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal">
         <div class="modal-content">
             <h2>Delete Member</h2>
@@ -134,41 +127,25 @@
         </div>
     </div>
 
-
-<!-- Add this modal at the end of the body, before the closing </body> tag -->
-<div id="shutdown-modal" class="modal">
-    <div class="modal-content">
-        <h2>System Power Options</h2>
-        <p>Choose an action:</p>
-        <div class="modal-actions">
-            <button id="restart-btn" class="primary-btn">Restart</button>
-            <button id="shutdown-confirm-btn" class="danger-btn">Shut Down</button>
-            <button id="cancel-shutdown" class="secondary-btn">Cancel</button>
-        </div>
-    </div>
-</div>
-
-    <!-- Virtual Keyboard -->
-    <!-- <div id="virtual-keyboard" class="keyboard-container">
-        <div class="keyboard">
-            <div class="keyboard-row" id="number-row"></div>
-            <div class="keyboard-row" id="top-row"></div>
-            <div class="keyboard-row" id="middle-row"></div>
-            <div class="keyboard-row" id="bottom-row"></div>
-            <div class="keyboard-row" id="space-row">
-                <button class="keyboard-key space-key">Space</button>
-                <button class="keyboard-key enter-key">Enter</button>
+    <div id="shutdown-modal" class="modal">
+        <div class="modal-content">
+            <h2>System Power Options</h2>
+            <p>Choose an action:</p>
+            <div class="modal-actions">
+                <button id="restart-btn" class="primary-btn">Restart</button>
+                <button id="shutdown-confirm-btn" class="danger-btn">Shut Down</button>
+                <button id="cancel-shutdown" class="secondary-btn">Cancel</button>
             </div>
         </div>
-    </div> -->
-<div id="virtual-keyboard" class="keyboard-container"></div>
-    <!-- Loader -->
-     
+    </div>
+
+    <div id="virtual-keyboard" class="keyboard-container"></div>
+
     <div id="loader" class="loader-container">
         <div class="loader"></div>
     </div>
 
-    <script src="/static/script.js"></script>
+    <script src="/static/js/main.js" type="module"></script>
     <script>
         // Prevent zooming with Ctrl + '+' or Ctrl + '-' or Ctrl + '='
         document.addEventListener('keydown', function(event) {
@@ -189,7 +166,7 @@
             event.preventDefault();
         });
 
-         window.addEventListener('beforeunload', function (e) {
+        window.addEventListener('beforeunload', function (e) {
             fetch('/close')
                 .then(response => console.log('Application closing'))
                 .catch(error => console.error('Error closing application:', error));
