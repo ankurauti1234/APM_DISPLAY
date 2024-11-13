@@ -769,4 +769,3 @@ document.addEventListener("DOMContentLoaded", function () {
   // Set up polling for system status every 30 seconds
   setInterval(fetchSystemStatus, 15000);
 });
-
