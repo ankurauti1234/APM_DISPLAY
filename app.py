@@ -141,6 +141,35 @@ def members():
     conn.close()
     return jsonify(members)
 
+@app.route('/api/members/<int:member_id>', methods=['GET', 'PUT', 'DELETE'])
+def update_delete_member(member_id):
+    conn = sqlite3.connect('system_status.db')
+    c = conn.cursor()
+    
+    if request.method == 'GET':
+        c.execute('SELECT * FROM members WHERE id=?', (member_id,))
+        member = c.fetchone()
+        if member:
+            return jsonify({'id': member[0], 'name': member[1], 'age': member[2], 'gender': member[3], 'is_active': bool(member[4])})
+        else:
+            return jsonify({'error': 'Member not found'}), 404
+    
+    elif request.method == 'PUT':
+        data = request.json
+        c.execute('UPDATE members SET name=?, age=?, gender=? WHERE id=?',
+                  (data['name'], data['age'], data['gender'], member_id))
+        conn.commit()
+        conn.close()
+        publish_mqtt_message()
+        return jsonify({'message': 'Member updated successfully'})
+    
+    elif request.method == 'DELETE':
+        c.execute('DELETE FROM members WHERE id=?', (member_id,))
+        conn.commit()
+        conn.close()
+        publish_mqtt_message()
+        return jsonify({'message': 'Member deleted successfully'})
+
 @app.route('/api/members/<int:member_id>/set_active', methods=['POST'])
 def set_member_active(member_id):
     global last_known_member_states

@@ -50,7 +50,7 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  cursor: none;
+  /* cursor: none; */
 }
 
 html, body {
