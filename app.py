@@ -301,50 +301,106 @@ def close_application():
     return 'Closing application'
 
 
-# Main PyQt application
 class MyApp(QtWidgets.QMainWindow):
     def __init__(self):
         super(MyApp, self).__init__()
         self.browser = QWebEngineView()
         self.setCentralWidget(self.browser)
-        self.showFullScreen()  # Set the window to full screen
+        self.showFullScreen()
         
-        # Disable zooming
+        # Enhanced zoom prevention settings
         self.browser.setZoomFactor(1.0)
         self.browser.settings().setAttribute(QWebEngineSettings.ShowScrollBars, False)
         self.browser.settings().setAttribute(QWebEngineSettings.ScrollAnimatorEnabled, False)
+        self.browser.settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
         
-        # Disable touch and keyboard zoom shortcuts
+        # Disable all touch and gesture events
+        self.browser.setAttribute(Qt.WA_AcceptTouchEvents, False)
+        self.setAttribute(Qt.WA_AcceptTouchEvents, False)
+        
+        # Comprehensive JavaScript to prevent zooming
+        zoom_prevention_js = """
+            // Prevent pinch zooming
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1 || e.scale !== undefined && e.scale !== 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent gesture events
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Prevent double-tap zooming
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Add viewport meta tag to prevent zooming
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+            
+            // Force viewport settings
+            document.body.style.zoom = '1.0';
+            document.body.style.touchAction = 'none';
+        """
+        
+        # Inject the zoom prevention JavaScript
+        self.browser.page().loadFinished.connect(lambda: self.browser.page().runJavaScript(zoom_prevention_js))
+        
+        # Disable keyboard zoom shortcuts
         self.disable_zoom_shortcuts()
         
-        # Disable touch events
-        self.browser.setAttribute(Qt.WA_AcceptTouchEvents, False)
-        
-        # Inject JavaScript to disable pinch zooming
-        self.browser.page().runJavaScript("""
-            document.addEventListener('touchmove', function(event) {
-                if (event.scale !== 1) { event.preventDefault(); }
-            }, { passive: false });
-            document.addEventListener('gesturestart', function(event) {
-                event.preventDefault();
-            }, { passive: false });
-        """)
-        
+        # Load the application URL
         self.browser.setUrl(QUrl("http://127.0.0.1:5000"))
 
     def disable_zoom_shortcuts(self):
-        # Create dummy shortcuts to override default zoom behavior
-        QShortcut(QKeySequence.ZoomIn, self, lambda: None)
-        QShortcut(QKeySequence.ZoomOut, self, lambda: None)
-        QShortcut(QKeySequence("Ctrl+="), self, lambda: None)
-        QShortcut(QKeySequence("Ctrl+-"), self, lambda: None)
-        QShortcut(QKeySequence("Ctrl+0"), self, lambda: None)
+        # Block all common zoom shortcuts
+        shortcuts = [
+            QKeySequence.ZoomIn,
+            QKeySequence.ZoomOut,
+            QKeySequence("Ctrl+="),
+            QKeySequence("Ctrl+-"),
+            QKeySequence("Ctrl+0"),
+            QKeySequence("Ctrl++"),
+            QKeySequence("Ctrl+wheel"),  # Mouse wheel zoom
+        ]
+        for shortcut in shortcuts:
+            QShortcut(shortcut, self, lambda: None)
 
     def keyPressEvent(self, event):
+        # Block Alt+F4 and other potential zoom-related key combinations
         if event.key() == QtCore.Qt.Key_F4 and event.modifiers() == QtCore.Qt.AltModifier:
             self.close()
+        elif event.modifiers() & QtCore.Qt.ControlModifier:
+            # Block all Ctrl + key combinations that might affect zoom
+            if event.key() in [QtCore.Qt.Key_Plus, QtCore.Qt.Key_Minus, QtCore.Qt.Key_0]:
+                return
+        super().keyPressEvent(event)
+
+    def wheelEvent(self, event):
+        # Block mouse wheel events when Ctrl is pressed
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            event.ignore()
         else:
-            super().keyPressEvent(event)
+            super().wheelEvent(event)
 
 # Function to run the Flask app
 def run_flask():
