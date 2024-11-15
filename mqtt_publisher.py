@@ -1,12 +1,12 @@
-# mqtt_publisher.py
 import paho.mqtt.client as mqtt
 import json
 import time
 import sqlite3
 import os
-import logging, configparser
+import logging
+import configparser
 
-#Read Device ID
+# Read Device ID
 idconfig = configparser.ConfigParser()
 idconfig.read('/etc/device.conf')
 device_id = idconfig['deviceUUID']['id']
@@ -46,7 +46,6 @@ def publish_mqtt_message():
         
         conn = sqlite3.connect('system_status.db')
         c = conn.cursor()
-        
         c.execute('SELECT * FROM members')
         members = c.fetchall()
         
@@ -56,11 +55,10 @@ def publish_mqtt_message():
         
         for member in members:
             states.append(bool(member[4]))  # is_active
-            genders.append(member[3])  # gender
-            ages.append(member[2])  # age
-        
+            genders.append(member[3])       # gender
+            ages.append(member[2])          # age
+            
         message = {
-            "ID": 1,
             "DEVICE_ID": device_id,
             "Type": 3,
             "TS": int(time.time()),
@@ -77,11 +75,32 @@ def publish_mqtt_message():
         
         client.loop_stop()
         client.disconnect()
-        
         conn.close()
-        
     except Exception as e:
         logger.error(f"Error publishing MQTT message: {e}")
+
+def publish_shutdown_message():
+    try:
+        client.connect(aws_iot_endpoint, 8883, 60)
+        client.loop_start()
+        
+        message = {
+            "DEVICE_ID": device_id,
+            "Type": 69,
+            "TS": int(time.time()),
+            "Details": {
+                "state": "shutdown"
+            }
+        }
+        
+        result = client.publish("apm/server", json.dumps(message), qos=1)
+        result.wait_for_publish()
+        logger.info(f"Shutdown message published: {message}")
+        
+        client.loop_stop()
+        client.disconnect()
+    except Exception as e:
+        logger.error(f"Error publishing shutdown message: {e}")
 
 if __name__ == "__main__":
     publish_mqtt_message()

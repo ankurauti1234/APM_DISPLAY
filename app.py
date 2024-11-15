@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from flask import Flask, render_template, request, jsonify
-from mqtt_publisher import publish_mqtt_message
+from mqtt_publisher import publish_mqtt_message, publish_shutdown_message 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
@@ -64,6 +64,9 @@ def index():
 @app.route('/api/shutdown', methods=['POST'])
 def shutdown():
     try:
+        # First send the MQTT message
+        publish_shutdown_message()
+        # Then initiate system shutdown
         os.system('sudo shutdown -h now')
         return jsonify({"message": "Shutting down the system..."}), 200
     except Exception as e:
