@@ -4,7 +4,12 @@ import json
 import time
 import sqlite3
 import os
-import logging
+import logging, configparser
+
+#Read Device ID
+idconfig = configparser.ConfigParser()
+idconfig.read('/etc/device.conf')
+device_id = idconfig['deviceUUID']['id']
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -56,7 +61,7 @@ def publish_mqtt_message():
         
         message = {
             "ID": 1,
-            "DEVICE_ID": 100000,
+            "DEVICE_ID": device_id,
             "Type": 3,
             "TS": int(time.time()),
             "Details": {

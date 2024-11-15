@@ -22,7 +22,7 @@
   --radius: 0.5rem;
 }
 
-.dark {
+/* :root {
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
   --card: 222.2 84% 4.9%;
@@ -42,7 +42,8 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 48%;
-}
+  --radius: 0.15rem;
+} */
 
 * {
   margin: 0;
@@ -50,7 +51,7 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  /* cursor: none; */
+  cursor: none;
 }
 
 html, body {
@@ -292,6 +293,7 @@ main {
 footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.25rem 1.5rem;
   background-color: hsl(var(--card));
   border-top: 1px solid hsl(var(--border));
@@ -308,7 +310,7 @@ footer {
   align-items: center;
   gap: 0.5rem;
   transition: background-color 150ms ease;
-  justify-content: center;
+  justify-content: center; height: 6vh; width: 6vh;
 }
 
 .footer-btn:active {
