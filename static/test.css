@@ -1015,3 +1015,8 @@ textarea {
   font-size: inherit;
   line-height: inherit;
 }
+
+
+#restart-btn{
+  display:none;
+}
